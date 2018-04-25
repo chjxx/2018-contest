@@ -1,33 +1,67 @@
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const path = require('path');
 const webpack = require('webpack');
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
-// 读取同一目录下的 base config
-const config = require('./webpack.base.config.js')
+// 源代码的根目录
+const SRC_PATH = path.resolve('./app');
+// 打包后的资源目录
+const ASSETS_BUILD_PATH = path.resolve('./build');
 
-config.module.rules.push(
-  {
-    test: /(\.scss|\.sass)$/,
-    use: ExtractTextPlugin.extract({
-      fallback: 'style-loader',
-      use: [
-        'css-loader',
-        'postcss-loader',
-        'sass-loader'
-      ]
+module.exports = {
+  context: SRC_PATH, // 设置源代码的默认根路径
+  entry: {
+    index: './index'
+  },
+  output: {
+    path: ASSETS_BUILD_PATH,
+    filename: './[name].js'
+  },
+  module: {
+    rules:
+    [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          query: {
+            presets: ["env", "stage-0"]
+          }
+        }
+      },
+      {
+        test: /(\.scss|\.sass)$/,
+        use: ExtractTextPlugin.extract({
+          use: [
+            'css-loader',
+            'postcss-loader',
+            'sass-loader'
+          ]
+        }),
+        exclude: /node_modules/
+      }
+    ]
+  },
+  devServer: {
+    contentBase: ASSETS_BUILD_PATH,
+    historyApiFallback: true,
+    inline: true
+  },
+  plugins: [
+    // 每次打包前先清空原来目录中的内容
+    new CleanWebpackPlugin([ASSETS_BUILD_PATH], {verbose: false}),
+    new HtmlWebpackPlugin({
+      template: SRC_PATH + "/index.html",
+      filename:'index.html',
+      hash:true,
+      minify:{ removeAttributeQuotes:true }
     }),
-    exclude: /node_modules/
-  }
-);
-
-config.plugins.push(
-  // 官方文档推荐使用下面的插件确保 NODE_ENV
-  new webpack.DefinePlugin({
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
-  }),
-  // 抽取 CSS 文件
-  new ExtractTextPlugin({
-    filename: '[name].css'
-  })
-);
-
-module.exports = config;
+    // 抽取 CSS 文件
+    new ExtractTextPlugin({
+      filename: '[name].css'
+    }),
+    new webpack.HotModuleReplacementPlugin()
+  ]
+};
