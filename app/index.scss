@@ -1,6 +1,9 @@
 @import "reset";
 
 $info-height: 40px;
+$box-padding: 20px;
+$board-width: 500px;
+$pieces-width: $board-width - $box-padding * 2;
 
 *{
   box-sizing: border-box;
@@ -27,14 +30,14 @@ body{
   width: 500px;
   .head{
     width: 100%;
-    height: 115px;
+    height: 120px;
     display: flex;
     justify-content: space-between;
     .logo{
       font-size: 8rem;
       font-weight: bold;
       color: #776e65;
-      line-height: 115px;
+      line-height: 110px;
     }
     .score{
       .current,
@@ -92,17 +95,52 @@ body{
       cursor: pointer;
     }
   }
-  .plate{
+  .board{
+    position: relative;
     margin-top: 40px;
-    height: 500px;
-    width: 100%;
+    padding: $box-padding;
+    width: $board-width;
+    height: $board-width;
     background-color: #bbada0;
     border-radius: 5px;
+    .grid{
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      .row{
+        display: flex;
+        justify-content: space-between;
+        .cell{
+          width: 100px;
+          height: 100px;
+          background-color: rgba(238, 228, 218, 0.35);
+          border-radius: 5px;
+        }
+      }
+    }
+    .pieces{
+      position: absolute;
+      left: $box-padding;
+      top: $box-padding;
+      width: $pieces-width;
+      height: $pieces-width;
+      .piece{
+
+      }
+    }
   }
   .describe{
     margin-top: 50px;
     font-size: 1.8rem;
     color: #776e65;
     line-height: 30px;
+  }
+}
+
+@media screen and (max-width: 520px){
+  .container{
+    width: 280px;
   }
 }
