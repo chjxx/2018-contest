@@ -1,12 +1,25 @@
 @import "reset";
 
 $info-height: 40px;
-$box-padding: 20px;
+
 $board-width: 500px;
+$board-min-width: 280px;
+
+$box-padding: 20px;
+$box-min-padding: 10px;
+
 $pieces-width: $board-width - $box-padding * 2;
-$min-box-padding: 10px;
-$min-board-width: 280px;
-$min-pieces-width: $min-board-width - $min-box-padding * 2;
+$pieces-min-width: $board-min-width - $box-min-padding * 2;
+
+$cell-width: 100px;
+$cell-min-width: 57.5px;
+
+$piece-width: 106px;
+$piece-min-width: 57.5px;
+
+$cell-radius: 5px;
+$cell-min-radius: 3px;
+
 
 *{
   box-sizing: border-box;
@@ -117,10 +130,10 @@ body{
         display: flex;
         justify-content: space-between;
         .cell{
-          width: 100px;
-          height: 100px;
+          width: $cell-width;
+          height: $cell-width;
           background-color: rgba(238, 228, 218, 0.35);
-          border-radius: 5px;
+          border-radius: $cell-radius;
         }
       }
     }
@@ -130,6 +143,111 @@ body{
       top: $box-padding;
       width: $pieces-width;
       height: $pieces-width;
+      .piece{
+        position: absolute;
+        width: $piece-width;
+        height: $piece-width;
+        border-radius: $cell-radius;
+        font-weight: bold;
+        text-align: center;
+        line-height: $piece-width;
+        transition: all .1s;
+      }
+      .piece-row-1{
+        top: -3px;
+      }
+      .piece-row-2{
+        top: $cell-width + $box-padding - 3px;
+      }
+      .piece-row-3{
+        top: ($cell-width + $box-padding) * 2 - 3px;
+      }
+      .piece-row-4{
+        top: ($cell-width + $box-padding) * 3 - 3px;
+      }
+      .piece-column-1{
+        left: -3px;
+      }
+      .piece-column-2{
+        left: $cell-width + $box-padding - 3px;
+      }
+      .piece-column-3{
+        left: ($cell-width + $box-padding) * 2 - 3px;
+      }
+      .piece-column-4{
+        left: ($cell-width + $box-padding) * 3 - 3px;
+      }
+      .piece-num-2,
+      .piece-num-4,
+      .piece-num-8,
+      .piece-num-16,
+      .piece-num-32,
+      .piece-num-64{
+        font-size: 5.5rem;
+      }
+      .piece-num-128,
+      .piece-num-256,
+      .piece-num-512{
+        font-size: 4.5rem;
+      }
+      .piece-num-1024,
+      .piece-num-2048{
+        font-size: 3.5rem;
+      }
+      .piece-num-2,
+      .piece-num-4{
+        color: #776e65;
+      }
+      .piece-num-8,
+      .piece-num-16,
+      .piece-num-32,
+      .piece-num-64,
+      .piece-num-128,
+      .piece-num-256,
+      .piece-num-512,
+      .piece-num-1024,
+      .piece-num-2048{
+        color: #f9f6f2;
+      }
+
+      .piece-num-2{
+        background-color: #eee4da;
+      }
+      .piece-num-4{
+        background-color: #ede0c8;
+      }
+      .piece-num-8{
+        background-color: #f2b179;
+      }
+      .piece-num-16{
+        background-color: #f59563;
+      }
+      .piece-num-32{
+        background-color: #f67c5f;
+      }
+      .piece-num-64{
+        background-color: #f65e3b;
+      }
+      .piece-num-128{
+        background-color: #edcf72;
+        box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.2381), inset 0 0 0 1px rgba(255, 255, 255, 0.14286);
+      }
+      .piece-num-256{
+        background-color: #edcc61;
+        box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.31746), inset 0 0 0 1px rgba(255, 255, 255, 0.19048);
+      }
+      .piece-num-512{
+        background-color: #edc850;
+        box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.39683), inset 0 0 0 1px rgba(255, 255, 255, 0.2381);
+      }
+      .piece-num-1024{
+        background-color: #edc53f;
+        box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.47619), inset 0 0 0 1px rgba(255, 255, 255, 0.28571);
+      }
+      .piece-num-2048{
+        background-color: #edc22e;
+        box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.55556), inset 0 0 0 1px rgba(255, 255, 255, 0.33333);
+      }
     }
   }
   .describe{
@@ -145,7 +263,7 @@ body{
     margin-top: 20px;
   }
   #game{
-    width: $min-board-width;
+    width: $board-min-width;
     .head{
       height: 65px;
       .logo{
@@ -175,22 +293,72 @@ body{
     }
     .board{
       margin-top: 20px;
-      width: $min-board-width;
-      height: $min-board-width;
-      padding: $min-box-padding;
+      width: $board-min-width;
+      height: $board-min-width;
+      padding: $box-min-padding;
       .grid{
         .row{
           .cell{
-            width: 57.5px;
-            height: 57.5px;
+            width: $cell-min-width;
+            height: $cell-min-width;
+            border-radius: $cell-min-radius;
           }
         }
       }
       .pieces{
-        left: $min-box-padding;
-        top: $min-box-padding;
-        width: $min-pieces-width;
-        height: $min-pieces-width;
+        left: $box-min-padding;
+        top: $box-min-padding;
+        width: $pieces-min-width;
+        height: $pieces-min-width;
+        .piece{
+          width: $piece-min-width;
+          height: $piece-min-width;
+          line-height: $piece-min-width;
+          border-radius: $cell-min-radius;
+        }
+        .piece-row-1{
+          top: 0px;
+        }
+        .piece-row-2{
+          top: $cell-min-width + $box-min-padding;
+        }
+        .piece-row-3{
+          top: ($cell-min-width + $box-min-padding) * 2;
+        }
+        .piece-row-4{
+          top: ($cell-min-width + $box-min-padding) * 3;
+        }
+        .piece-column-1{
+          left: 0;
+        }
+        .piece-column-2{
+          left: $cell-min-width + $box-min-padding;
+        }
+        .piece-column-3{
+          left: ($cell-min-width + $box-min-padding) * 2;
+        }
+        .piece-column-4{
+          left: ($cell-min-width + $box-min-padding) * 3;
+        }
+        .piece-num-2,
+        .piece-num-4,
+        .piece-num-8{
+          font-size: 3.5rem;
+        }
+        .piece-num-16,
+        .piece-num-32,
+        .piece-num-64{
+          font-size: 3rem;
+        }
+        .piece-num-128,
+        .piece-num-256,
+        .piece-num-512{
+          font-size: 2.5rem;
+        }
+        .piece-num-1024,
+        .piece-num-2048{
+          font-size: 1.5rem;
+        }
       }
     }
     .describe{
