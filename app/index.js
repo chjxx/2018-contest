@@ -1,14 +1,14 @@
 import './index.scss';
 
-const [rows, columns] = [4, 4]; // 设定行数与列数
-
 // 作为已有“卡片”的映射。加占位符，方便之后遍历及筛选
-let piecesData = [
+const cardsData = [
   [null, null, null, null],
   [null, null, null, null],
   [null, null, null, null],
   [null, null, null, null]
 ];
+
+const [rowLength, colLength] = [cardsData.length, cardsData[0].length]; // 设定行数与列数，方便后面使用;
 
 class Game{
   constructor(id = '#game'){
@@ -16,15 +16,14 @@ class Game{
     this.$currScore = document.querySelector('.current .number');
     this.$bestScore = document.querySelector('.best .number');
     this.$restartBtn = document.querySelector('.info .restart');
-    this.$piecesBoard = document.querySelector('.board .pieces');
-    this.$pieceTemp = document.querySelector('#temp').content.firstChild;
-    const keyFunctions = [this.goLeft, this.goUp, this.goRight, this.goDown];//与下面keyCode索引一一对应
-    const keyCodes = [37, 38, 39, 40];
+    this.$cardsBoard = document.querySelector('.board .cardsBoard');
+    this.$cardTemp = document.querySelector('#temp').content.children[0];
+    const keyCodes = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
     document.body.addEventListener('keydown', (e) => {
-      let idx = keyCodes.indexOf(e.keyCode)
-      if(idx !== -1){
-        keyFunctions[idx]();
+
+      if(keyCodes.indexOf(e.code) !== -1){
+        this[e.code]();
       }
     });
     document.body.addEventListener('click', (e) => {
@@ -35,16 +34,71 @@ class Game{
 
     this.start();
   }
-  goUp(){
-    console.log('up');
+  ArrowUp(){
+    let self = this;
+    let task = false;
+
+    for(let colIdx = 0; colIdx < colLength; colIdx++){
+      for(let rowIdx = 0; rowIdx < rowLength; rowIdx++){
+
+        if(cardsData[rowIdx][colIdx] === null) continue;
+
+        if(rowIdx === 0) continue;
+
+        roll(rowIdx - 1);
+
+        function roll(idx){
+          let preCard = cardsData[idx][colIdx];
+          let nowCard = cardsData[rowIdx][colIdx];
+          if(preCard !== null){
+            if(preCard.cardNumber === nowCard.cardNumber){
+              nowCard.className = preCard.className; // 改变卡片位置
+              self.throwCards([preCard, nowCard]); // 将卡片压到低位，不会挡到新增卡片
+              cardsData[rowIdx][colIdx] = null; // 将卡片从映射表删除
+              cardsData[idx][colIdx] = null; // 将卡片从映射表删除
+              let card = self.createCard(idx + 1, colIdx + 1, nowCard.cardNumber + preCard.cardNumber);
+              cardsData[idx][colIdx] = card;
+              self.$cardsBoard.appendChild(card);
+              if(task === false) task = true;
+            }else{
+              if(rowIdx - 1 !== idx){
+                nowCard.classList.remove(`card-row-${rowIdx + 1}`);
+                nowCard.classList.add(`card-row-${idx + 2}`);
+                let card = nowCard;
+                cardsData[idx + 1][colIdx] = cardsData[rowIdx][colIdx];
+                cardsData[rowIdx][colIdx] = null;
+                if(task === false) task = true;
+              }
+            }
+          }else{
+            if(idx === 0){
+              nowCard.classList.remove(`card-row-${rowIdx + 1}`);
+              nowCard.classList.add(`card-row-${idx + 1}`);
+              let card = nowCard;
+              cardsData[rowIdx][colIdx] = null;
+              cardsData[idx][colIdx] = card;
+              if(task === false) task = true;
+            }else{
+              roll(idx - 1);
+            }
+          }
+        }
+      }
+    }
+
+    if(task){
+      for(let i = 0; i < 2; i++){
+        self.insertOneCard();
+      }
+    }
   }
-  goDown(){
+  ArrowDown(){
     console.log('down');
   }
-  goLeft(){
+  ArrowLeft(){
     console.log('left');
   }
-  goRight(){
+  ArrowRight(){
     console.log('right');
   }
   start(){
@@ -53,44 +107,47 @@ class Game{
 
 
     for(let i = 0; i < 2; i++){
-      self.insertOnePiece(); //随机插入一个“卡片”
+      self.insertOneCard(); //随机插入一个“卡片”
     }
 
     function clearData(){
-      self.$piecesBoard.innerHTML = '';
+      self.$cardsBoard.innerHTML = '';
       self.$currScore = 0;
 
-      piecesData.forEach((row) => {
-        row.forEach((column) => {
-          column = null;
+      cardsData.forEach((row) => {
+        row.forEach((col) => {
+          col = null;
         });
       });
     }
 
   }
+  throwCards(cards){
+    for(let i = 0; i < cards.length; i++){
+      cards[i].classList.add('card-merged');
+    }
+  }
   /**
    * 随机生机一个数字 “2” 或 “4”
    * @return {Number}
    */
-  randomCreateOnePieceNum(){
-    let num = randomFrom(1, 4);
-    return num === 4 ? 4 : 2;
+  randomCreateOnecardNum(){
+    let num = randomFrom(1, 8);
+    return num === 4 ? 4 : 2; // 1/8几率获得4
   }
   /**
    * 随机在空的位置插入一个“卡片”
    */
-  insertOnePiece(){
-    let self = this;
-    let emptyCells = self.searchEmptyCells(); // 获取可填充位置
-    let idx = randomFrom(1, emptyCells.length); // 获取一个随机数
+  insertOneCard(){
+    let emptyCells = this.searchEmptyCells(); // 获取可填充位置
+    let idx = randomFrom(0, emptyCells.length - 1); // 获取一个随机数
     let rowNum = emptyCells[idx][0];
-    let columnNum = emptyCells[idx][1];
-    console.log(rowNum, columnNum);
-    let pieceNum = self.randomCreateOnePieceNum(); // 随机获取作为卡片的数字
-    let piece = self.createPiece(rowNum, columnNum, pieceNum); // 生成卡片元素
-    piecesData[rowNum][columnNum] = piece; // 插入到卡片映射；
+    let colNum = emptyCells[idx][1];
+    let cardNum = this.randomCreateOnecardNum(); // 随机获取作为卡片的数字
+    let card = this.createCard(rowNum + 1, colNum + 1, cardNum); // 生成卡片元素
 
-    self.$piecesBoard.appendChild(piece); // 插入到HTML中
+    cardsData[rowNum][colNum] = card; // 插入到卡片映射；
+    this.$cardsBoard.appendChild(card); // 插入到HTML中
   }
   /**
    * 检索出当前空余的位置
@@ -98,10 +155,11 @@ class Game{
    */
   searchEmptyCells(){
     let emptyCells = [];
-    piecesData.forEach((row) => {
-      row.forEach((column) => {
-        if(column === null){
-          emptyCells.push([row, column]);
+
+    cardsData.forEach((row, rowIdx) => {
+      row.forEach((col, colIdx) => {
+        if(col === null){
+          emptyCells.push([rowIdx, colIdx]);
         }
       });
     });
@@ -111,17 +169,20 @@ class Game{
   /**
    * 创建一个“卡片”
    * @param  {Number} rowNum
-   * @param  {Number} columnNum
-   * @param  {Number} num
+   * @param  {Number} colNum
+   * @param  {Number} cardNum
    * @return {Element}
    */
-  createPiece(rowNum, columnNum, num){
-    this.$pieceTemp.className = `piece piece-row-${rowNum} piece-column-${columnNum} piece-num-${num} piece-new`;
-    this.$pieceTemp.innerText = num;
+  createCard(rowNum, colNum, cardNum){
+    this.$cardTemp.className = `card card-row-${rowNum} card-column-${colNum} card-num-${cardNum} card-new`;
+    this.$cardTemp.innerText = cardNum;
 
-    this.$pieceTemp.customNumber = num; // 加入一个定制属性，方便之后读取卡片数值
+    let card = document.importNode(this.$cardTemp, true);
 
-    return document.importNode(this.$pieceTemp, true);
+
+    card.cardNumber = cardNum; // 加入一个定制属性，方便之后读取卡片数值
+
+    return card;
   }
 }
 
@@ -135,7 +196,7 @@ function randomFrom(min, max){
   let temp;
 
   if(min > max){
-    tem = min;
+    temp = min;
     min = max;
     max = temp;
   }
