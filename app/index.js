@@ -45,21 +45,23 @@ class Game{
 
         if(rowIdx === 0) continue;
 
-        roll(rowIdx - 1);
+        roll([rowIdx - 1]);
 
         function roll(idx){
           let preCard = cardsData[idx][colIdx];
           let nowCard = cardsData[rowIdx][colIdx];
           if(preCard !== null){
             if(preCard.cardNumber === nowCard.cardNumber){
-              nowCard.className = preCard.className; // 改变卡片位置
-              self.throwCards([preCard, nowCard]); // 将卡片压到低位，不会挡到新增卡片
-              cardsData[rowIdx][colIdx] = null; // 将卡片从映射表删除
-              cardsData[idx][colIdx] = null; // 将卡片从映射表删除
-              let card = self.createCard(idx + 1, colIdx + 1, nowCard.cardNumber + preCard.cardNumber);
-              cardsData[idx][colIdx] = card;
-              self.$cardsBoard.appendChild(card);
-              if(task === false) task = true;
+              // if(!preCard.classList.contains('card-new')){
+                nowCard.className = preCard.className; // 改变卡片位置
+                self.throwCards([preCard, nowCard]); // 将卡片压到低位，不会挡到新增卡片
+                cardsData[rowIdx][colIdx] = null; // 将卡片从映射表删除
+                cardsData[idx][colIdx] = null; // 将卡片从映射表删除
+                let card = self.createCard(idx + 1, colIdx + 1, nowCard.cardNumber + preCard.cardNumber);
+                cardsData[idx][colIdx] = card;
+                self.$cardsBoard.append(card);
+                if(task === false) task = true;
+              // }
             }else{
               if(rowIdx - 1 !== idx){
                 nowCard.classList.remove(`card-row-${rowIdx + 1}`);
@@ -87,9 +89,25 @@ class Game{
     }
 
     if(task){
-      for(let i = 0; i < 2; i++){
-        self.insertOneCard();
+      self.insertOneCard();
+      clearMergedCard();
+      deleteLabelNew();
+    }
+
+    function clearMergedCard(){
+      let children = self.$cardsBoard.children;
+      for(let i = children.length - 1; i >= 0; i--){
+        if(children[i].classList.contains('card-merged')){
+          children[i].remove();
+          console.log(i);
+        }
       }
+    }
+
+    function deleteLabelNew(){
+      Array.from(self.$cardsBoard.children).forEach((card) => {
+        if(card.classList.contains('card-new')) card.classList.remove('card-new');
+      })
     }
   }
   ArrowDown(){
@@ -114,9 +132,9 @@ class Game{
       self.$cardsBoard.innerHTML = '';
       self.$currScore = 0;
 
-      cardsData.forEach((row) => {
-        row.forEach((col) => {
-          col = null;
+      cardsData.forEach((row, rowIdx) => {
+        row.forEach((col, colIdx) => {
+          cardsData[rowIdx][colIdx] = null;
         });
       });
     }
@@ -147,7 +165,7 @@ class Game{
     let card = this.createCard(rowNum + 1, colNum + 1, cardNum); // 生成卡片元素
 
     cardsData[rowNum][colNum] = card; // 插入到卡片映射；
-    this.$cardsBoard.appendChild(card); // 插入到HTML中
+    this.$cardsBoard.append(card); // 插入到HTML中
   }
   /**
    * 检索出当前空余的位置
