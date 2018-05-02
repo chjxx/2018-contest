@@ -69,6 +69,9 @@ module.exports = {
     }),
     // 抽取 CSS 文件
     new ExtractTextPlugin('css/[name].css'),
-    new webpack.HotModuleReplacementPlugin()
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.SourceMapDevToolPlugin({
+      filename: '[file].map'
+    })
   ]
 };

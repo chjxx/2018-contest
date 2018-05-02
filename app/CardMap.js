@@ -20,7 +20,6 @@ class CardMap{
   }
   move([preRow, preCol], [nowRow, nowCol]){
     let card = this.data[preRow][preCol];
-
     this.data[preRow][preCol] = null;
     this.data[nowRow][nowCol] = card;
   }
@@ -47,7 +46,12 @@ class CardMap{
 
     return empty;
   }
-
+  balanceNum(card1, card2){
+    return card1.cardNumber === card2.cardNumber;
+  }
+  isNew(card){
+    return card.classList.contains('card-new');
+  }
 }
 
 export default CardMap;
