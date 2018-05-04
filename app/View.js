@@ -10,18 +10,21 @@ class View{
     this.$cardTemp = this.$container.querySelector('#temp').content.children[0];
   }
   throwCards(...cards){
-
     cards.forEach((card) => {
       card.classList.add('card-merged');
     });
   }
-  createCard(row, col, num){
+  createCard([row, col], num){
     this.$cardTemp.className = `card card-row-${row} card-column-${col} card-num-${num} card-new`;
     this.$cardTemp.innerText = num;
 
     let card = document.importNode(this.$cardTemp, true);
 
     card.cardNumber = num; // 加入一个定制属性，方便之后读取卡片数值
+
+    card.isNew = function (){
+      return this.classList.contains('card-new');
+    }
     return card;
   }
   insertOneCard(...args){
@@ -34,6 +37,7 @@ class View{
     }
 
     this.$cardsBoard.append(card);
+    return card;
   }
   clearThrownCard(){
     let children = this.$cardsBoard.children;
@@ -48,10 +52,8 @@ class View{
       if(card.classList.contains('card-new')) card.classList.remove('card-new');
     })
   }
-  clearCardBoard(){
+  clear(){
     this.$cardsBoard.innerHTML = '';
-  }
-  clearCurrScore(){
     this.$currScore = 0;
   }
 }

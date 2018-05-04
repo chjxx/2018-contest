@@ -9,24 +9,24 @@ class CardMap{
     this.rowLength = this.data.length;
     this.colLength = this.data[0].length;
   }
-  get([row, col]){
+  getCard([row, col]){
     return this.data[row][col];
   }
-  set([row, col], val){
+  setCard([row, col], val){
     this.data[row][col] = val;
   }
-  has([row, col]){
+  hasCard([row, col]){
     return this.data[row][col] !== null ? true : false;
   }
-  move([preRow, preCol], [nowRow, nowCol]){
+  moveCard([preRow, preCol], [nowRow, nowCol]){
     let card = this.data[preRow][preCol];
     this.data[preRow][preCol] = null;
     this.data[nowRow][nowCol] = card;
   }
-  delete([row, col]){
+  deleteCard([row, col]){
     this.data[row][col] = null;
   }
-  clear(){
+  clearData(){
     this.data.forEach((row, rowIdx) => {
       row.forEach((col, colIdx) => {
         this.data[rowIdx][colIdx] = null;
@@ -58,10 +58,10 @@ class CardMap{
     return cards[0].cardNumber === cards[1].cardNumber;
   }
   isNew(arg){
-    if(typeof args === 'Array'){
+    if(typeof arg === 'Array'){
       return this.get(arg).classList.contains('card-new');
     }else{
-      return card.classList.contains('card-new');
+      return arg.classList.contains('card-new');
     }
   }
 }
