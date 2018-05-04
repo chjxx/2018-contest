@@ -149,7 +149,7 @@ function roll(nowIdx, dir){
 
   seekNextCard(nowIdx, dir, (hasCard, [rowIdx, colIdx]) => {
     if(hasCard){
-
+      if(compareCard([nowCardRowIdx, nowCardColIdx], [rowIdx, colIdx])) changed = true;
     }else{
       let [rowClassName, colChassName] = [`card-row-${rowIdx + 1}`,`card-col-${colIdx + 1}`];
 
@@ -159,8 +159,8 @@ function roll(nowIdx, dir){
       nowCard.classList.add(colChassName);
 
       cardMap.move(nowIdx, [rowIdx, colIdx]);
+      if(!changed) changed = true;
     }
-
   })
 
   return changed;
@@ -205,6 +205,19 @@ function roll(nowIdx, dir){
         return colIdx === 0 ? true : false;
       }
     }
+  }
+
+  function compareCard([nowCardRowIdx, nowCardColIdx], [rowIdx, colIdx]){
+
+      let equel
+
+      if(cardMap.isNew([rowIdx, colIdx])) return false;
+
+      if(cardMap.balanceNum([nowCardRowIdx, nowCardColIdx], [rowIdx, colIdx])){
+        equel = true
+      }else{
+        equel = false;
+      }
   }
 
   function isFirstIdx(idx){

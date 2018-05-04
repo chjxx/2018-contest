@@ -46,11 +46,23 @@ class CardMap{
 
     return empty;
   }
-  balanceNum(card1, card2){
-    return card1.cardNumber === card2.cardNumber;
+  balanceNum(...args){
+    let cards = [], self = this;
+    args.forEach((arg) => {
+      if(typeof arg === 'Array'){
+        cards.push(self.get(arg));
+      }else{
+        cards.push(arg);
+      }
+    })
+    return cards[0].cardNumber === cards[1].cardNumber;
   }
-  isNew(card){
-    return card.classList.contains('card-new');
+  isNew(arg){
+    if(typeof args === 'Array'){
+      return this.get(arg).classList.contains('card-new');
+    }else{
+      return card.classList.contains('card-new');
+    }
   }
 }
 
