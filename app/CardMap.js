@@ -23,8 +23,11 @@ class CardMap{
     this.data[preRow][preCol] = null;
     this.data[nowRow][nowCol] = card;
   }
-  deleteCard([row, col]){
-    this.data[row][col] = null;
+  deleteCards(...args){
+    let self = this;
+    args.forEach((arg) => {
+      self.data[arg[0]][arg[1]] = null;
+    });
   }
   clearData(){
     this.data.forEach((row, rowIdx) => {
@@ -48,18 +51,20 @@ class CardMap{
   }
   balanceNum(...args){
     let cards = [], self = this;
+
     args.forEach((arg) => {
-      if(typeof arg === 'Array'){
-        cards.push(self.get(arg));
+      if(arg instanceof Array){
+        cards.push(self.getCard(arg));
       }else{
         cards.push(arg);
       }
     })
+
     return cards[0].cardNumber === cards[1].cardNumber;
   }
   isNew(arg){
-    if(typeof arg === 'Array'){
-      return this.get(arg).classList.contains('card-new');
+    if(arg instanceof Array){
+      return this.getCard(arg).classList.contains('card-new');
     }else{
       return arg.classList.contains('card-new');
     }

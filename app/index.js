@@ -17,9 +17,9 @@ class Game{
 
     document.body.addEventListener('keydown', (e) => {
       if(keyCodes.indexOf(e.code) !== -1){
-        $view.clearThrownCard();
-        $view.deleteLabelNew();
-        self[e.code]();
+        $view.clearThrownCard(); // 清除上一次操作合并遗留在底部的元素
+        $view.deleteLabelNew(); // 清除上一次操作为辨别新旧卡片额外添加的类
+        self[e.code](); // 执行这一次操作
       }
     });
 
@@ -42,9 +42,7 @@ class Game{
       }
     }
 
-    if(changed){
-      this.insertOneCard();
-    }
+    if(changed) this.randomInsertOneCard();
   }
   ArrowDown(){
     let changed = false;
@@ -57,7 +55,7 @@ class Game{
       }
     }
 
-    if(changed) this.insertOneCard();
+    if(changed) this.randomInsertOneCard();
   }
   ArrowLeft(){
     let changed = false;
@@ -70,7 +68,7 @@ class Game{
       }
     }
 
-    if(changed) this.insertOneCard();
+    if(changed) this.randomInsertOneCard();
   }
   ArrowRight(){
     let changed = false;
@@ -83,166 +81,121 @@ class Game{
       }
     }
 
-    if(changed) this.insertOneCard();
+    if(changed) this.randomInsertOneCard();
   }
   start(){
-    let self = this;
     reset(); //清除存在数据
 
-
     for(let i = 0; i < 2; i++){
-      self.insertOneCard(); //随机插入一个“卡片”
+      this.randomInsertOneCard();
     }
 
     function reset(){
       $view.clear();
       cardMap.clearData();
     }
-
   }
-  /**
-   * 随机生机一个数字 “2” 或 “4”
-   * @return {Number}
-   */
-  randomCreateOnecardNum(){
-    let num = randomFrom(1, 8);
-    return num === 4 ? 4 : 2; // 1/8几率获得4
-  }
-  /**
-   * 随机在空的位置插入一个“卡片”
-   */
-  insertOneCard(){
+  randomInsertOneCard(){
     let emptyCells = cardMap.searchEmpty(); // 获取可填充位置
-    let idx = randomFrom(0, emptyCells.length - 1); // 获取一个随机数
-    let rowNum = emptyCells[idx][0];
-    let colNum = emptyCells[idx][1];
-    let cardNum = this.randomCreateOnecardNum(); // 随机获取作为卡片的数字
-    let card = $view.createCard([rowNum + 1, colNum + 1], cardNum); // 生成卡片元素
-
-    cardMap.setCard([rowNum, colNum], card); // 插入到卡片映射；
-    $view.insertOneCard(card); // 插入到HTML中
+    let idx = randomFrom(0, emptyCells.length - 1); // 获取一个要插入卡片的位置的随机索引
+    let cellIdx = emptyCells[idx];
+    let cardNum = randomCardNum(); // 随机获取作为卡片的数字
+    let card = $view.insertOneCard([cellIdx[0] + 1, cellIdx[1] + 1], cardNum);
+    cardMap.setCard(cellIdx, card); // 插入到卡片映射；
   }
 }
 
 
-function roll(nowIdx, dir, callback){
-  let changed = false;
-  let [nowCardRowIdx, nowCardColIdx] = nowIdx;
+function roll(nowCardIdx, dir, callback){
+  console.log(nowCardIdx)
+  let [nowCardRowIdx, nowCardColIdx] = nowCardIdx;
   let [cardRowClassName, cardColClassName] = [`card-row-${nowCardRowIdx + 1}`, `card-col-${nowCardColIdx + 1}`];
   let nextIdx;
 
   if(['up', 'down', 'left', 'right'].indexOf(dir) === -1) return false; // 不符合这几个关键字其中一个则不处理
 
-  if(!cardMap.hasCard(nowIdx)) return false; // 如果当前位置没有卡片，则不处理
+  if(!cardMap.hasCard(nowCardIdx)) return false; // 如果当前位置没有卡片，则不处理
 
-  let nowCard = cardMap.getCard(nowIdx);
+  let nowCard = cardMap.getCard(nowCardIdx);
 
-  if(isFirstIdx(nowIdx)) return false; // 如果当前位置是第一张卡片，则不处理
+  if(isFirstIdx(nowCardIdx)) return false; // 如果当前位置是第一张卡片，则不处理
 
-  seekNextCard(nowIdx, dir, (hasCard, [rowIdx, colIdx]) => {
+  seekNextCard(nowCardIdx, dir, (hasCard, targetIdx) => {
     if(hasCard){
-      compareCard([nowCardRowIdx, nowCardColIdx], [rowIdx, colIdx], (msg) => {
-        if(msg) changed = true;
+      compareCard(nowCardIdx, targetIdx, (msg) => {
+          callback(msg);
       })
     }else{
-      let [rowClassName, colChassName] = [`card-row-${rowIdx + 1}`,`card-col-${colIdx + 1}`];
-
-      nowCard.classList.remove(cardRowClassName);
-      nowCard.classList.remove(cardColClassName);
-      nowCard.classList.add(rowClassName);
-      nowCard.classList.add(colChassName);
-
-      cardMap.moveCard(nowIdx, [rowIdx, colIdx]);
-      if(!changed) changed = true;
+      $view.move(nowCard, [targetIdx[0] + 1, targetIdx[1] + 1]);
+      cardMap.moveCard(nowCardIdx, targetIdx);
+      callback(true);
     }
   })
 
-  callback(changed);
-
   function seekNextCard(nowCardIdx, dir, callback){
-    let nextCardIdx = null;
-    let getNextIdx = getNextIdxFunc();
+    let nextCardIdx = null, nextIdx;
+    let getNextIdx = nextIdxFunc(nowCardIdx, dir);
 
     do{
-      let nextIdx = getNextIdx();
-
+      nextIdx = getNextIdx();
       if(cardMap.hasCard(nextIdx)) nextCardIdx = nextIdx;
-
-    }while(!isLastIdx(nextIdx) && !nextCardIdx);
+    }while(!isFirstIdx(nextIdx) && !nextCardIdx);
 
     nextCardIdx !== null ? callback(true, nextCardIdx) : callback(false, nextIdx);
 
 
-    function getNextIdxFunc([rowIdx, colIdx], dir){
+    function nextIdxFunc([rowIdx, colIdx], dir){
+
       let func;
 
       if(dir === 'up'){
-        func = function(){ return [rowIdx + 1, colIdx]};
+        func = function(){ return [--rowIdx, colIdx]};
       }else if(dir === 'down'){
-        func = function(){ return [rowIdx - 1, colIdx]};
+        func = function(){ return [++rowIdx, colIdx]};
       }else if(dir === 'left'){
-        func = function(){ return [rowIdx, colIdx + 1]};
+        func = function(){ return [rowIdx, --colIdx]};
       }else{
-        func = function(){ return [rowIdx, colIdx - 1]};
+        func = function(){ return [rowIdx, ++colIdx]};
       }
       return func;
     }
-
-    function isLastIdx([rowIdx, colIdx]){
-      if(dir === 'up'){
-        return rowIdx === 3 ? true : false;
-      }else if(dir === 'down'){
-        return rowIdx === 0 ? true : false;
-      }else if(dir === 'left'){
-        return colIdx === 3 ? true : false;
-      }else{
-        return colIdx === 0 ? true : false;
-      }
-    }
   }
 
-  function compareCard([nowCardRowIdx, nowCardColIdx], [rowIdx, colIdx] callback){
+  function compareCard(nowCardIdx, targetIdx, callback){
 
-      if(cardMap.isNew([rowIdx, colIdx])) return false;
-
-      if(cardMap.balanceNum([nowCardRowIdx, nowCardColIdx], [rowIdx, colIdx])){
-        let nowCard = CardMap.getCard([nowCardRowIdx, nowCardColIdx]);
-        let nextCard = cardMap.getCard([rowIdx, colIdx]);
+      if(!cardMap.isNew(targetIdx) && cardMap.balanceNum(nowCardIdx, targetIdx)){
+        let nextCard = cardMap.getCard(targetIdx);
         let cardNum = nowCard.cardNumber;
-        cardMap.deleteCard([nowCardRowIdx, nowCardColIdx]);
-        cardMap.deleteCard([rowIdx, colIdx]);
-        $view.throwCards(nowCard, nextCard);
-        let card = $view.insertOneCard(rowIdx, colIdx, cardNum * 2);
-        cardMap.setCard([rowIdx, colIdx], card);
+
+        $view.throwCards(nowCard, nextCard); // 下压dom元素
+        $view.move(nowCard, [targetIdx[0] + 1, targetIdx[1] + 1]);
+        cardMap.deleteCards(nowCardIdx, targetIdx); // 删除映射上的数据
+        let card = $view.insertOneCard([targetIdx[0] + 1, targetIdx[1] + 1], cardNum * 2);
+        cardMap.setCard(targetIdx, card);
 
         callback(true);
       }else{
-        if(!isClose([nowCardRowIdx, nowCardColIdx], [rowIdx, colIdx])){
-          let nextIdx, card = cardMap.getCard([nowCardRowIdx, nowCardColIdx]);
+        if(!isCloser(nowCardIdx, targetIdx)){
+          let idx;
 
           if(dir === 'up'){
-            nextIdx = [rowIdx + 1, colIdx];
+            idx = [targetIdx[0] + 1, targetIdx[1]];
           }else if(dir === 'down'){
-            nextIdx = [rowIdx - 1, colIdx];
+            idx = [targetIdx[0] - 1, targetIdx[1]];
           }else if(dir === 'left'){
-            nextIdx = [rowIdx, colIdx + 1];
+            idx = [targetIdx[0], targetIdx[1] + 1];
           }else{
-            nextIdx = [rowIdx, colIdx - 1];
+            idx = [targetIdx[0], targetIdx[1] - 1];
           }
-
-          cardMap.moveCard([nowCardRowIdx, nowCardColIdx], nextIdx);
-
-          card.classList.remove(`card-row-${nowCardRowIdx + 1}`);
-          card.classList.remove(`card-col-${nowCardColIdx + 1}`);
-          card.classList.add(`card-row-${nextIdx[0] + 1}`);
-          card.classList.add(`card-col-${nextIdx[1] + 1}`)
+          cardMap.moveCard(nowCardIdx, idx);
+          $view.move(nowCard, [idx[0] + 1, idx[1] + 1]);
 
           callback(true);
         }
       }
 
 
-      function isClose([nowCardRowIdx, nowCardColIdx], [nextCardRowIdx, nextCardColIdx]){
+      function isCloser([nowCardRowIdx, nowCardColIdx], [nextCardRowIdx, nextCardColIdx]){
         if(dir === 'up'){
           return nowCardRowIdx === nextCardRowIdx + 1;
         }else if(dir === 'down'){
@@ -256,18 +209,23 @@ function roll(nowIdx, dir, callback){
 
   }
 
-  function isFirstIdx(idx){
+  function isFirstIdx([rowIdx, colIdx]){
     if(dir === 'up'){
-      return nowCardRowIdx === 0 ? true : false;
+      return rowIdx === 0 ? true : false;
     }else if(dir === 'down'){
-      return nowCardRowIdx === 3 ? true : false;
+      return rowIdx === 3 ? true : false;
     }else if(dir === 'left'){
-      return nowCardColIdx === 0 ? true : false;
+      return colIdx === 0 ? true : false;
     }else{
-      return nowCardColIdx === 3 ? true : false;
+      return colIdx === 3 ? true : false;
     }
   }
 
+}
+
+function randomCardNum(){
+  let num = randomFrom(1, 8);
+  return num === 4 ? 4 : 2; // 1/8几率获得4
 }
 
 

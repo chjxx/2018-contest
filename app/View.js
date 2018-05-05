@@ -9,31 +9,39 @@ class View{
     this.$cardsBoard = this.$container.querySelector('.board .cardsBoard');
     this.$cardTemp = this.$container.querySelector('#temp').content.children[0];
   }
+  move(card, [row, col]){
+    let rowRe = /\b(card-row-\d+)\b/;
+    let colRe = /\b(card-col-\d+)\b/;
+    let nowRowClassName = rowRe.exec(card.className)[1];
+    let nowColClassName = colRe.exec(card.className)[1];
+    let [rowClassName, colclassName] = [`card-row-${row}`,`card-col-${col}`];
+    card.classList.remove(nowRowClassName);
+    card.classList.remove(nowColClassName);
+    card.classList.add(rowClassName);
+    card.classList.add(colclassName);
+  }
   throwCards(...cards){
     cards.forEach((card) => {
       card.classList.add('card-merged');
     });
   }
   createCard([row, col], num){
-    this.$cardTemp.className = `card card-row-${row} card-column-${col} card-num-${num} card-new`;
+    this.$cardTemp.className = `card card-row-${row} card-col-${col} card-num-${num} card-new`;
     this.$cardTemp.innerText = num;
 
     let card = document.importNode(this.$cardTemp, true);
 
     card.cardNumber = num; // 加入一个定制属性，方便之后读取卡片数值
 
-    card.isNew = function (){
-      return this.classList.contains('card-new');
-    }
     return card;
   }
   insertOneCard(...args){
     let card;
 
-    if(args.length === 3){
-      card = this.createCard(args[0], args[1], args[2]);
-    }else{
+    if(args[0] instanceof Element){
       card = args[0];
+    }else{
+      card = this.createCard(args[0], args[1]);
     }
 
     this.$cardsBoard.append(card);

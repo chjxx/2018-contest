@@ -166,16 +166,16 @@ body{
       .card-row-4{
         top: ($cell-width + $box-padding) * 3 - 3px;
       }
-      .card-column-1{
+      .card-col-1{
         left: -3px;
       }
-      .card-column-2{
+      .card-col-2{
         left: $cell-width + $box-padding - 3px;
       }
-      .card-column-3{
+      .card-col-3{
         left: ($cell-width + $box-padding) * 2 - 3px;
       }
-      .card-column-4{
+      .card-col-4{
         left: ($cell-width + $box-padding) * 3 - 3px;
       }
       .card-num-2,
@@ -251,6 +251,9 @@ body{
       }
       .card-merged{
         z-index: 0;
+      }
+      .card-new{
+        animation: newCard .2s;
       }
     }
   }
@@ -332,16 +335,16 @@ body{
         .card-row-4{
           top: ($cell-min-width + $box-min-padding) * 3;
         }
-        .card-column-1{
+        .card-col-1{
           left: 0;
         }
-        .card-column-2{
+        .card-col-2{
           left: $cell-min-width + $box-min-padding;
         }
-        .card-column-3{
+        .card-col-3{
           left: ($cell-min-width + $box-min-padding) * 2;
         }
-        .card-column-4{
+        .card-col-4{
           left: ($cell-min-width + $box-min-padding) * 3;
         }
         .card-num-2,
@@ -371,4 +374,10 @@ body{
       line-height: 25px;
     }
   }
+}
+
+@keyframes newCard{
+  0%{ transform: scale(0.4, 0.4); }
+  50%{ transform: scale(1.1, 1.1); }
+  100%{ transform: scale(1, 1); }
 }
