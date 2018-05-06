@@ -1,5 +1,6 @@
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
 
@@ -36,26 +37,24 @@ module.exports = {
       },
       {
         test: /(\.scss|\.sass)$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          {
-            loader: 'postcss-loader',
-            options: {
-              plugins: [require('autoprefixer')]
-            }
-          },
-          'sass-loader'
-        ],
+        use: ExtractTextPlugin.extract({
+          use: [
+            'css-loader',
+            {
+              loader: 'postcss-loader',
+              options: {
+                plugins: [require('autoprefixer')]
+              }
+            },
+            'sass-loader'
+          ]
+        }),
         exclude: /node_modules/
       }
     ]
   },
   devServer: {
-    contentBase: ASSETS_BUILD_PATH,
-    historyApiFallback: true,
-    inline: true,
-    hot: true
+    contentBase: ASSETS_BUILD_PATH
   },
   plugins: [
     // 每次打包前先清空原来目录中的内容
@@ -66,7 +65,8 @@ module.exports = {
       hash: true,
       minify: { removeAttributeQuotes:true }
     }),
-    new webpack.HotModuleReplacementPlugin(),
+    // 抽取 CSS 文件
+    new ExtractTextPlugin('css/[name].css'),
     new webpack.SourceMapDevToolPlugin({
       filename: '[file].map'
     })

@@ -174,13 +174,19 @@ function roll(nowCardIdx, dir, callback){
     let getNextIdx = nextIdxFunc(nowCardIdx, dir);
 
     do{
-      nextIdx = getNextIdx();
+      nextIdx = getNextIdx(); // 获取下一个位置
       if(cardMap.hasCard(nextIdx)) nextCardIdx = nextIdx;
-    }while(!isFirstIdx(nextIdx, dir) && !nextCardIdx);
+    }while(!isFirstIdx(nextIdx, dir) && !nextCardIdx); // 如果还没到底部而且还没有找到卡片则继续
 
     nextCardIdx !== null ? callback(true, nextCardIdx) : callback(false, nextIdx);
 
-
+    /**
+     * 返回一个函数，用于获取不同方向的下一个位置
+     * @param  {[type]} [rowIdx 当前位置
+     * @param  {[type]} colIdx]
+     * @param  {[type]} dir 移动方向
+     * @return {[type]}
+     */
     function nextIdxFunc([rowIdx, colIdx], dir){
 
       let func;
@@ -197,33 +203,39 @@ function roll(nowCardIdx, dir, callback){
       return func;
     }
   }
+  /**
+   * 对比两张卡片做处理，有改变则调用回调函数
+   * @param  {[type]}   nowCardIdx 当前卡片
+   * @param  {[type]}   targetCardIdx 最接近当前卡片的卡片
+   * @param  {Function} callback 改变数据时的回调
+   * @return {[type]}
+   */
+  function compareCard(nowCardIdx, targetCardIdx, callback){
 
-  function compareCard(nowCardIdx, targetIdx, callback){
-
-    if(!cardMap.isNew(targetIdx) && cardMap.balanceNum(nowCardIdx, targetIdx)){
-      let nextCard = cardMap.getCard(targetIdx);
+    if(!cardMap.isNew(targetCardIdx) && cardMap.balanceNum(nowCardIdx, targetCardIdx)){
+      let nextCard = cardMap.getCard(targetCardIdx);
       let cardNum = nowCard.cardNumber;
 
       $view.throwCards(nowCard, nextCard); // 下压dom元素
-      $view.move(nowCard, [targetIdx[0] + 1, targetIdx[1] + 1]);
-      cardMap.deleteCards(nowCardIdx, targetIdx); // 删除映射上的数据
-      let card = $view.insertOneCard([targetIdx[0] + 1, targetIdx[1] + 1], cardNum * 2);
-      cardMap.setCard(targetIdx, card);
+      $view.move(nowCard, [targetCardIdx[0] + 1, targetCardIdx[1] + 1]);
+      cardMap.deleteCards(nowCardIdx, targetCardIdx); // 删除映射上的数据
+      let card = $view.insertOneCard([targetCardIdx[0] + 1, targetCardIdx[1] + 1], cardNum * 2);
+      cardMap.setCard(targetCardIdx, card);
       let score = cardMap.updateScore(cardNum * 2);
       $view.updateScore(score);
       callback(true);
     }else{
-      if(!isCloser(nowCardIdx, targetIdx, dir)){
+      if(!isCloser(nowCardIdx, targetCardIdx, dir)){
         let idx;
 
         if(dir === 'up'){
-          idx = [targetIdx[0] + 1, targetIdx[1]];
+          idx = [targetCardIdx[0] + 1, targetCardIdx[1]];
         }else if(dir === 'down'){
-          idx = [targetIdx[0] - 1, targetIdx[1]];
+          idx = [targetCardIdx[0] - 1, targetCardIdx[1]];
         }else if(dir === 'left'){
-          idx = [targetIdx[0], targetIdx[1] + 1];
+          idx = [targetCardIdx[0], targetCardIdx[1] + 1];
         }else{
-          idx = [targetIdx[0], targetIdx[1] - 1];
+          idx = [targetCardIdx[0], targetCardIdx[1] - 1];
         }
         cardMap.moveCard(nowCardIdx, idx);
         $view.move(nowCard, [idx[0] + 1, idx[1] + 1]);
@@ -232,7 +244,15 @@ function roll(nowCardIdx, dir, callback){
       }
     }
 
-
+    /**
+     * 对比是否为相邻卡片
+     * @param  {[type]}  [nowCardRowIdx 当前卡片索引
+     * @param  {[type]}  nowCardColIdx]
+     * @param  {[type]}  [nextCardRowIdx 下一张卡片索引
+     * @param  {[type]}  nextCardColIdx]
+     * @param  {[type]}  dir 移动方向
+     * @return {Boolean}
+     */
     function isCloser([nowCardRowIdx, nowCardColIdx], [nextCardRowIdx, nextCardColIdx], dir){
       if(dir === 'up'){
         return nowCardRowIdx === nextCardRowIdx + 1;
@@ -245,7 +265,13 @@ function roll(nowCardIdx, dir, callback){
       }
     }
   }
-
+  /**
+   * 查看是否为当前方向最底部的位置
+   * @param  {[type]}  [rowIdx 位置
+   * @param  {[type]}  colIdx]
+   * @param  {[type]}  dir 移动方向
+   * @return {Boolean}
+   */
   function isFirstIdx([rowIdx, colIdx], dir){
     if(dir === 'up'){
       return rowIdx === 0 ? true : false;
@@ -259,12 +285,18 @@ function roll(nowCardIdx, dir, callback){
   }
 
 }
-
+/**
+ * 随机生成卡片号码
+ * @return {[type]}
+ */
 function randomCardNum(){
   let num = randomFrom(1, 8);
   return num === 4 ? 4 : 2; // 1/8几率获得4
 }
-
+/**
+ * 测试是否有下一步可走
+ * @return {[type]}
+ */
 function testNextStep(){
   let nextStep = false;
 
