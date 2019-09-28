@@ -100,7 +100,7 @@ body {
   height: 100%; }
 
 body {
-  margin-top: 80px;
+  padding-top: 80px;
   background-color: #faf8ef; }
 
 #game {
@@ -347,7 +347,7 @@ body {
 
 @media screen and (max-width: 520px) {
   body {
-    margin-top: 20px; }
+    padding-top: 20px; }
   #game {
     width: 280px; }
     #game .head {

@@ -37,7 +37,7 @@ body{
 }
 
 body{
-  margin-top: 80px;
+  padding-top: 80px;
   background-color: #faf8ef;
 }
 
@@ -303,7 +303,7 @@ body{
 
 @media screen and (max-width: 520px){
   body{
-    margin-top: 20px;
+    padding-top: 20px;
   }
   #game{
     width: $board-min-width;
